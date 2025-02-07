@@ -13,26 +13,29 @@ function FollowUp() {
   const [question, setQuestion] = useState("");
   const [response, setResponse] = useState("");
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
   const handleChange = (e) => {
     let question = e.target.value;
     setQuestion(question);
     console.log(e.target.value);
   };
-  const onSubmit = async (e) => {
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setResponse(null);
     setError(null);
-    // send question to back end to get repsonse from AI model
+    setLoading(true);
     try {
-      console.log("Question: " + question);
-      const res = await axios.post("http://localhost:5001/api/QA", question);
-      setResponse(res);
-      console.log("follow up response: " + res);
-    } catch (error) {
+      // Send data to the backend
+      const response = await axios.post("http://localhost:5001/api/followup", {
+        question,
+      });
+      setResponse(response);
+      console.log("response:" + response.data);
+    } catch (err) {
       setError(
-        error.response?.data?.error || "An error occurred. Please try again."
+        err.response?.data?.error || "An error occurred. Please try again."
       );
-      console.error("Error fetching data: " + error);
     }
   };
   return (
@@ -42,7 +45,7 @@ function FollowUp() {
           placeholders={placeholders}
           value={question}
           onChange={handleChange}
-          onSubmit={onSubmit}
+          onSubmit={handleSubmit}
         />
       </div>
       {response && (
@@ -54,6 +57,7 @@ function FollowUp() {
               </p>
             ))}
             <div className="min-h-96"></div>
+            <div className="min-h-10"></div>
           </div>
         </>
       )}

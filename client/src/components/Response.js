@@ -7,7 +7,6 @@ import FollowUp from "./FollowUp.js";
 import SankeyDiagram from "./SankeyDiagram.js";
 
 export function Response({ data }) {
-  // TODO: RENDER Budget and Goals Section - Fix Question section
   const tabs = [
     {
       title: "Overview",
@@ -106,7 +105,7 @@ const Overview = ({
   const savingsRateNum = parseInt(savingsRate, 10);
   const savingsGoalNum = parseInt(savingsGoal, 10);
   return (
-    <div className="p-10 bg-transparent rounded-lg shadow-md">
+    <div className="p-10 h-screen overflow-y-auto bg-transparent rounded-lg shadow-md">
       <div className="mb-6">
         <h3 className="text-3xl">
           Finn's overall assessment of your financial status:{" "}
@@ -144,6 +143,7 @@ const Overview = ({
           {overallEvaluation}
         </p>
       </div>
+      <div className="min-h-96"></div>
     </div>
   );
 };

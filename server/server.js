@@ -3,10 +3,11 @@ import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
+import axios from "axios";
 
 dotenv.config();
 const groq = new Groq({
-  apiKey: "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",
+  apiKey: "Your Groq API key",
 });
 
 const app = express();
@@ -16,7 +17,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 app.get("/", (req, res) => {
-  res.send("Financial Advisory Backend is Running!");
+  res.send("Backend is Running");
 });
 
 // Start the Server
@@ -24,17 +25,18 @@ app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
 
-var messages = contextAgent();
+var messages = [];
 var followUpMessages = [];
+contextAgent(); // Contexts agent with system prompt
 
+// form submission backend point
 app.post("/api/submit", async (req, res) => {
   const {
-    firstName,
-    lastName,
     age,
     annualIncome,
     monthlyExpenses,
     currentSavings,
+    context,
     investments,
     shortTermGoals,
     longTermGoals,
@@ -44,6 +46,7 @@ app.post("/api/submit", async (req, res) => {
     annualIncome,
     monthlyExpenses,
     currentSavings,
+    context,
     investments,
     shortTermGoals,
     longTermGoals,
@@ -82,18 +85,23 @@ app.post("/api/submit", async (req, res) => {
 });
 
 // TODO: Fix this
-app.post("/api/QA", async (req, res) => {
-  const data = req.body;
-  console.log("Data: " + JSON.stringify(data));
+app.post("/api/followup", async (req, res) => {
+  console.log("Received request body:", req.body);
+  if (!req.body || !req.body.question) {
+    return res.status(400).json({ error: "Invalid request body" });
+  }
+  const question = req.body.question;
+  console.log("processed question: " + question);
   const follow_up_prompt = {
     role: "user",
-    content: data,
+    content: question,
   };
   followUpMessages.push(follow_up_prompt);
-  console.log("Follow: " + JSON.stringify(follow_up_prompt));
+  console.log("Follow Up Messages: " + JSON.stringify(followUpMessages));
   try {
     const advice = await getFollowUpQuestionAnswer();
-    res.json(advice.choices[0]?.message?.content);
+    console.log("Advice: " + advice);
+    res.json(advice);
   } catch (error) {
     console.error(
       "Error interacting with Groq - Follow up question",
@@ -113,6 +121,7 @@ function generatePrompt({
   annualIncome,
   monthlyExpenses,
   currentSavings,
+  context,
   investments,
   shortTermGoals,
   longTermGoals,
@@ -120,6 +129,7 @@ function generatePrompt({
   return `
        Here is the given user's financial data, goals, and preferences:
         - Age: $${age}
+        - Context about the user: $${context}
         - Annual Income: $${annualIncome}
         - Monthly Expenses: $${monthlyExpenses}
         - Current Savings: $${currentSavings}
@@ -142,8 +152,7 @@ export async function getGroqChatCompletion(messages) {
 }
 
 function contextAgent() {
-  let messages = [];
-  // TODO: Modify Json Schema to produce better output - Sankey Diagram, Pie chart, etc.
+  // JSON schema for Financial report
   const schema = {
     summary: {
       financial_health: "<Bad/Moderate/Fair/Good/Great>",
@@ -250,7 +259,6 @@ function contextAgent() {
     content: system_message,
   };
   messages.push(system_prompt);
-  return messages;
 }
 
 function contextFollowUpClient({
@@ -273,7 +281,7 @@ function contextFollowUpClient({
         - Short Term Goals: $${shortTermGoals}
         - Long Term Goals: $${longTermGoals} 
   
-  1. **Response Guidlines**
+  1. **Response Guidelines**
       - Personalization: Tailor responses based on the provided financial data.
       - Financial Principles: Ensure all advice follows sound financial principles and common investment strategies.
       - Clarity & Simplicity: Keep responses clear, actionable, and free from unnecessary jargon.
@@ -290,8 +298,14 @@ function contextFollowUpClient({
 }
 
 export async function getFollowUpQuestionAnswer() {
-  return groq.chat.completions.create({
+  const chatCompletion = await groq.chat.completions.create({
     messages: followUpMessages,
     model: "llama-3.3-70b-versatile",
   });
+  console.log("Groq API Full Response:", chatCompletion);
+  console.log(
+    "Groq API Full Response:",
+    JSON.stringify(chatCompletion, null, 2)
+  );
+  return chatCompletion.choices[0]?.message.content || "";
 }

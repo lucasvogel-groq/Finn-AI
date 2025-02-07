@@ -14,12 +14,11 @@ export function InfoForm() {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
     age: "",
     annualIncome: "",
     monthlyExpenses: "",
     currentSavings: "",
+    context: "",
     investments: "",
     shortTermGoals: "",
     longTermGoals: "",
@@ -45,7 +44,6 @@ export function InfoForm() {
         "http://localhost:5001/api/submit",
         formData
       );
-      console.log("data reposone in form: " + res.data);
       navigate("/dashboard", { state: { data: res.data } });
     } catch (err) {
       setError(
@@ -63,32 +61,6 @@ export function InfoForm() {
         personalized financial dashboard
       </p>
       <form className="my-8" onSubmit={handleSubmit}>
-        <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 mb-4">
-          <LabelInputContainer>
-            <Label htmlFor="firstname">First name</Label>
-            <Input
-              id="firstname"
-              placeholder="Lucas"
-              type="text"
-              name="firstName"
-              title="firstName"
-              value={formData.firstName}
-              onChange={handleChange}
-            />
-          </LabelInputContainer>
-          <LabelInputContainer>
-            <Label htmlFor="lastname">Last name</Label>
-            <Input
-              id="lastname"
-              placeholder="Vogel"
-              type="text"
-              name="lastName"
-              title="lastName"
-              value={formData.lastName}
-              onChange={handleChange}
-            />
-          </LabelInputContainer>
-        </div>
         <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 mb-4">
           <LabelInputContainer>
             <Label htmlFor="age">Age</Label>
@@ -141,6 +113,18 @@ export function InfoForm() {
             />
           </LabelInputContainer>
         </div>
+        <LabelInputContainer className="mb-5">
+          <Label htmlFor="context">Context About Yourself</Label>
+          <Input
+            id="context"
+            placeholder="I am a 20 year old college student..."
+            type="text"
+            name="context"
+            title="context"
+            value={formData.context}
+            onChange={handleChange}
+          />
+        </LabelInputContainer>
         <LabelInputContainer className="mb-5">
           <Label htmlFor="investments">Current State of Investment</Label>
           <Input
