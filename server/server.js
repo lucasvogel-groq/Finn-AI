@@ -7,7 +7,7 @@ import axios from "axios";
 
 dotenv.config();
 const groq = new Groq({
-  apiKey: "Your Groq API key",
+  apiKey: "Your Groq API Key",
 });
 
 const app = express();
@@ -41,6 +41,7 @@ app.post("/api/submit", async (req, res) => {
     shortTermGoals,
     longTermGoals,
   } = req.body;
+  // Generates prompt
   const prompt = generatePrompt({
     age,
     annualIncome,
@@ -51,11 +52,13 @@ app.post("/api/submit", async (req, res) => {
     shortTermGoals,
     longTermGoals,
   });
+  // Contexts the follow up client
   contextFollowUpClient({
     age,
     annualIncome,
     monthlyExpenses,
     currentSavings,
+    context,
     investments,
     shortTermGoals,
     longTermGoals,
@@ -84,7 +87,6 @@ app.post("/api/submit", async (req, res) => {
   }
 });
 
-// TODO: Fix this
 app.post("/api/followup", async (req, res) => {
   console.log("Received request body:", req.body);
   if (!req.body || !req.body.question) {
@@ -100,7 +102,11 @@ app.post("/api/followup", async (req, res) => {
   console.log("Follow Up Messages: " + JSON.stringify(followUpMessages));
   try {
     const advice = await getFollowUpQuestionAnswer();
-    console.log("Advice: " + advice);
+    const response = {
+      role: "assistant",
+      content: advice,
+    };
+    followUpMessages.push(response);
     res.json(advice);
   } catch (error) {
     console.error(
@@ -234,7 +240,6 @@ function contextAgent() {
     },
   };
   const jsonSchema = JSON.stringify(schema, null, 4);
-  // TODO: Fix this for better responses
   const system_message = `You are a highly intelligent financial advising AI agent. Your role is to generate personalized financial advice. Follow these strict guidelines:
 
       1. **General Instructions**
@@ -266,6 +271,7 @@ function contextFollowUpClient({
   annualIncome,
   monthlyExpenses,
   currentSavings,
+  context,
   investments,
   shortTermGoals,
   longTermGoals,
@@ -274,6 +280,7 @@ function contextFollowUpClient({
   
   Here is your clients financial data:
         - Age: $${age}
+        - Context: $${context}
         - Annual Income: $${annualIncome}
         - Monthly Expenses: $${monthlyExpenses}
         - Current Savings: $${currentSavings}
@@ -302,10 +309,5 @@ export async function getFollowUpQuestionAnswer() {
     messages: followUpMessages,
     model: "llama-3.3-70b-versatile",
   });
-  console.log("Groq API Full Response:", chatCompletion);
-  console.log(
-    "Groq API Full Response:",
-    JSON.stringify(chatCompletion, null, 2)
-  );
   return chatCompletion.choices[0]?.message.content || "";
 }

@@ -1,7 +1,5 @@
-import { React, useState } from "react";
-import { cn } from "../lib/utils.js";
+import { React } from "react";
 import { Tabs } from "./Tabs.js";
-import axios from "axios";
 import { PieChart } from "./PieChart.js";
 import FollowUp from "./FollowUp.js";
 import SankeyDiagram from "./SankeyDiagram.js";

@@ -6,19 +6,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 function Dashboard() {
   const location = useLocation();
   const navigate = useNavigate();
-  // const [data, setData] = useState(null);
   const data = location.state?.data;
-  console.log("Data in dashboard: " + data);
 
-  const [response, setResponse] = useState(null);
-
-  const closePopup = () => {
-    setResponse(null);
-  };
-
-  console.log(typeof data);
   const jsonData = JSON.parse(data);
-  console.log("JsonData in dashboard: " + JSON.stringify(jsonData, null, 2));
   if (!data) {
     return (
       <div className="max-w-md mx-auto">
